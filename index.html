@@ -353,9 +353,9 @@ let referencePromise = null;
 // --- API-nyckel ---------------------------------------------------------
 function getKey() { return localStorage.getItem(KEY_STORAGE); }
 
-function openKeyDialog() {
+function openKeyDialog(errMsg) {
   $("key-input").value = getKey() || "";
-  $("key-err").textContent = "";
+  $("key-err").textContent = errMsg || "";
   overlay.classList.add("show");
   $("key-input").focus();
 }
@@ -454,10 +454,11 @@ async function generate() {
     if (!res.ok) {
       let detail = "";
       try { detail = (await res.json())?.error?.message || ""; } catch (e) {}
-      if (res.status === 401) {
+      if (res.status === 401 || res.status === 403) {
         hideStatus();
-        $("key-err").textContent = "Nyckeln verkar ogiltig. Försök igen.";
-        openKeyDialog();
+        openKeyDialog(detail
+          ? ("Nyckeln avvisades: " + detail)
+          : "Nyckeln verkar ogiltig. Kontrollera att hela nyckeln klistrades in.");
         return;
       }
       throw new Error(detail || ("Något gick fel (" + res.status + ")."));

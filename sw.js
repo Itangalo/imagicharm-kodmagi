@@ -1,5 +1,5 @@
 // Enkel service worker – gör appen installerbar och cachar skalet offline.
-const CACHE = "imagicharm-v1";
+const CACHE = "imagicharm-v2";
 const ASSETS = [
   "./",
   "./index.html",
@@ -28,6 +28,27 @@ self.addEventListener("fetch", (e) => {
   // Anropa aldrig API:t via cache.
   if (url.hostname.endsWith("anthropic.com")) return;
 
+  // Sidan (HTML) hämtas alltid från nätet först, så att fixar slår igenom.
+  // Cachen används bara som reserv när man är offline.
+  const isDocument = e.request.mode === "navigate" ||
+    (e.request.destination === "document");
+
+  if (isDocument) {
+    e.respondWith(
+      fetch(e.request)
+        .then((res) => {
+          if (res.ok && url.origin === location.origin) {
+            const copy = res.clone();
+            caches.open(CACHE).then((c) => c.put(e.request, copy));
+          }
+          return res;
+        })
+        .catch(() => caches.match(e.request).then((c) => c || caches.match("./index.html")))
+    );
+    return;
+  }
+
+  // Övriga resurser: cache först, uppdatera i bakgrunden.
   e.respondWith(
     caches.match(e.request).then((cached) => {
       const network = fetch(e.request)
