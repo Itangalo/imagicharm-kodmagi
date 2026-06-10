@@ -442,7 +442,11 @@ async function generate() {
       },
       body: JSON.stringify({
         model: MODEL,
-        max_tokens: 1500,
+        // GPT-5-Codex är en resonemangsmodell och spenderar tokens på internt
+        // tänkande FÖRE svaret. Budgeten måste rymma både resonemang och kod,
+        // annars kommer svaret tomt. Låg effort räcker gott för små snuttar.
+        max_tokens: 4000,
+        reasoning: { effort: "low" },
         messages: [
           // Systemmeddelandet (referensen) är identiskt varje gång. OpenAI-modeller
           // cachar identiska prefix automatiskt, så ingen cache_control behövs här.
@@ -468,6 +472,13 @@ async function generate() {
     const data = await res.json();
     const text = data?.choices?.[0]?.message?.content || "";
     const code = stripFences(text);
+
+    if (!code) {
+      const reason = data?.choices?.[0]?.finish_reason || "okänt";
+      throw new Error(reason === "length"
+        ? "Svaret tog slut på utrymme innan koden blev klar. Försök igen eller förenkla beskrivningen."
+        : "Modellen gav ingen kod (orsak: " + reason + "). Försök igen.");
+    }
 
     codeEl.textContent = code;
     codeEl.removeAttribute("data-highlighted");
