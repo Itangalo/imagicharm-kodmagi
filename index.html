@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#141028">
+<title>ImagiCharm Kodmagi</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<link rel="icon" href="./icon-192.png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<style>
+  :root {
+    --bg: #141028;
+    --panel: #1f1940;
+    --panel-2: #2a2154;
+    --pink: #ff2e9a;
+    --pink-soft: #ff6ab5;
+    --text: #f4f1ff;
+    --muted: #a79fcf;
+    --radius: 20px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, system-ui, sans-serif;
+    background: radial-gradient(1200px 800px at 50% -10%, #2a1f55 0%, var(--bg) 60%);
+    color: var(--text);
+    min-height: 100dvh;
+    padding: 24px 18px calc(24px + env(safe-area-inset-bottom));
+    -webkit-text-size-adjust: 100%;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; }
+
+  header { text-align: center; margin: 8px 0 22px; }
+  .logo { width: 72px; height: 72px; image-rendering: pixelated; border-radius: 16px; }
+  h1 { font-size: 1.7rem; margin: 12px 0 4px; letter-spacing: .3px; }
+  .tagline { color: var(--muted); margin: 0; font-size: 1rem; }
+
+  label { display: block; font-weight: 600; margin: 0 4px 8px; font-size: 1.05rem; }
+
+  textarea {
+    width: 100%;
+    min-height: 130px;
+    resize: vertical;
+    font-size: 1.15rem;
+    line-height: 1.4;
+    padding: 16px 18px;
+    border-radius: var(--radius);
+    border: 2px solid var(--panel-2);
+    background: var(--panel);
+    color: var(--text);
+    outline: none;
+    transition: border-color .15s;
+  }
+  textarea:focus { border-color: var(--pink); }
+  textarea::placeholder { color: var(--muted); }
+
+  .btn {
+    appearance: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 700;
+    border-radius: var(--radius);
+    transition: transform .08s, filter .15s, opacity .15s;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn[disabled] { opacity: .55; cursor: default; }
+
+  .btn-primary {
+    width: 100%;
+    margin-top: 14px;
+    padding: 18px;
+    font-size: 1.25rem;
+    color: #fff;
+    background: linear-gradient(135deg, var(--pink) 0%, #ff7d3a 100%);
+    box-shadow: 0 8px 22px rgba(255, 46, 154, .35);
+  }
+
+  .status {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    margin-top: 18px;
+    padding: 14px 18px;
+    border-radius: var(--radius);
+    background: var(--panel);
+    font-size: 1.05rem;
+  }
+  .status.show { display: flex; }
+  .status.error { background: #3a1530; color: #ffb3d6; border: 1px solid #ff2e9a55; }
+  .spinner {
+    width: 22px; height: 22px; flex: 0 0 auto;
+    border: 3px solid #ffffff33;
+    border-top-color: var(--pink-soft);
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .result { margin-top: 22px; display: none; }
+  .result.show { display: block; }
+  .code-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin: 0 4px 8px;
+  }
+  .code-head span { color: var(--muted); font-size: .95rem; }
+  pre {
+    margin: 0;
+    border-radius: var(--radius);
+    overflow: auto;
+    border: 2px solid var(--panel-2);
+    font-size: 1rem;
+  }
+  pre code.hljs { padding: 18px; border-radius: var(--radius); background: #181232; }
+
+  .btn-copy {
+    margin-top: 12px;
+    width: 100%;
+    padding: 16px;
+    font-size: 1.1rem;
+    color: var(--text);
+    background: var(--panel-2);
+  }
+  .btn-copy.done { background: #1d4a2e; color: #b7ffce; }
+
+  footer { text-align: center; margin-top: 30px; }
+  .link {
+    background: none; border: none; cursor: pointer;
+    color: var(--muted); font-size: .92rem; text-decoration: underline;
+    font-family: inherit; padding: 8px;
+  }
+
+  /* Exempelprompter */
+  .examples { margin-top: 14px; }
+  .examples-label { color: var(--muted); font-size: .95rem; margin: 0 4px 10px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 10px; }
+  .chip {
+    border: 2px solid var(--panel-2);
+    background: var(--panel);
+    color: var(--text);
+    border-radius: 999px;
+    padding: 10px 16px;
+    font-size: 1rem;
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color .15s, transform .08s;
+  }
+  .chip:active { transform: scale(.96); }
+  .chip:hover { border-color: var(--pink); }
+
+  /* Hopfällbara paneler */
+  details.panel {
+    margin-top: 14px;
+    background: var(--panel);
+    border: 2px solid var(--panel-2);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  details.panel > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 16px 18px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  details.panel > summary::-webkit-details-marker { display: none; }
+  details.panel > summary::after { content: "▾"; color: var(--muted); transition: transform .2s; }
+  details.panel[open] > summary::after { transform: rotate(180deg); }
+  .panel-body { padding: 0 18px 18px; }
+
+  /* Färgkarta */
+  .colors { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 10px; }
+  .color {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--bg); border-radius: 12px; padding: 8px 11px;
+  }
+  .swatch { width: 26px; height: 26px; border-radius: 7px; flex: 0 0 auto; border: 1px solid #ffffff33; }
+  .color b { font-size: 1.1rem; }
+  .color small { color: var(--muted); font-size: .88rem; display: block; }
+
+  /* Lär-panel */
+  .learn-item { padding: 13px 0; border-top: 1px solid var(--panel-2); }
+  .learn-item:first-child { border-top: none; padding-top: 4px; }
+  .learn-item h3 { margin: 0 0 4px; font-size: 1.05rem; }
+  .learn-item p { margin: 0 0 9px; color: var(--muted); font-size: .96rem; line-height: 1.45; }
+  .learn-item code {
+    display: inline-block;
+    background: #181232; color: #f4f1ff;
+    padding: 7px 11px; border-radius: 9px;
+    font-size: .95rem;
+  }
+
+  /* API-key dialog */
+  .overlay {
+    position: fixed; inset: 0;
+    background: rgba(10, 8, 22, .82);
+    display: none; align-items: center; justify-content: center;
+    padding: 20px; z-index: 10;
+  }
+  .overlay.show { display: flex; }
+  .card {
+    width: 100%; max-width: 420px;
+    background: var(--panel);
+    border: 2px solid var(--panel-2);
+    border-radius: var(--radius);
+    padding: 24px;
+  }
+  .card h2 { margin: 0 0 8px; font-size: 1.3rem; }
+  .card p { color: var(--muted); margin: 0 0 16px; font-size: .98rem; line-height: 1.45; }
+  .card input {
+    width: 100%; padding: 15px 16px; font-size: 1.05rem;
+    border-radius: 14px; border: 2px solid var(--panel-2);
+    background: var(--bg); color: var(--text); outline: none;
+  }
+  .card input:focus { border-color: var(--pink); }
+  .card .btn-primary { margin-top: 16px; box-shadow: none; }
+  .card .err { color: #ffb3d6; font-size: .9rem; margin: 10px 2px 0; min-height: 1em; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <img class="logo" src="./icon-192.png" alt="">
+    <h1>ImagiCharm Kodmagi</h1>
+    <p class="tagline">Beskriv vad du vill se – få färdig kod ✨</p>
+  </header>
+
+  <label for="desc">Vad vill du visa på din charm?</label>
+  <textarea id="desc" placeholder="Beskriv vad du vill se på din charm... t.ex. ett regnbågshjärta som blinkar"></textarea>
+
+  <div class="examples">
+    <p class="examples-label">Kom inte på något? Tryck på en:</p>
+    <div class="chips" id="chips">
+      <button class="chip">ett regnbågshjärta som blinkar</button>
+      <button class="chip">mitt namn Ida som rullar förbi i rosa</button>
+      <button class="chip">en grön och gul diagonal</button>
+      <button class="chip">en blå bakgrund med en blinkande vit prick</button>
+      <button class="chip">en sol som lyser i orange och gult</button>
+    </div>
+  </div>
+
+  <button id="generate" class="btn btn-primary">Generera kod 🪄</button>
+
+  <div id="status" class="status">
+    <div class="spinner"></div>
+    <div id="status-text">Trollar fram din kod...</div>
+  </div>
+
+  <div id="result" class="result">
+    <div class="code-head">
+      <span>Din kod 🐍</span>
+    </div>
+    <pre><code id="code" class="language-python hljs"></code></pre>
+    <button id="copy" class="btn btn-copy">Kopiera kod 📋</button>
+  </div>
+
+  <details class="panel">
+    <summary>🎨 Bokstäver och färger</summary>
+    <div class="panel-body">
+      <p class="examples-label">I koden står en bokstav för en färg. Byter du bokstaven byter du färg!</p>
+      <div class="colors">
+        <div class="color"><span class="swatch" style="background:rgb(255,0,0)"></span><div><b>R</b><small>röd</small></div></div>
+        <div class="color"><span class="swatch" style="background:rgb(0,255,0)"></span><div><b>G</b><small>grön</small></div></div>
+        <div class="color"><span class="swatch" style="background:rgb(0,0,255)"></span><div><b>B</b><small>blå</small></div></div>
+        <div class="color"><span class="swatch" style="background:rgb(0,255,255)"></span><div><b>A</b><small>aqua</small></div></div>
+        <div class="color"><span class="swatch" style="background:rgb(255,255,0)"></span><div><b>Y</b><small>gul</small></div></div>
+        <div class="color"><span class="swatch" style="background:rgb(255,165,0)"></span><div><b>O</b><small>orange</small></div></div>
+        <div class="color"><span class="swatch" style="background:rgb(255,0,255)"></span><div><b>M</b><small>magenta</small></div></div>
+        <div class="color"><span class="swatch" style="background:rgb(148,0,211)"></span><div><b>P</b><small>lila</small></div></div>
+        <div class="color"><span class="swatch" style="background:rgb(255,255,255)"></span><div><b>W</b><small>vit</small></div></div>
+        <div class="color"><span class="swatch" style="background:rgb(0,0,0)"></span><div><b>K</b><small>svart</small></div></div>
+      </div>
+      <p class="examples-label" style="margin-top:14px;margin-bottom:0">Vill du ha en egen färg? Skriv tre tal: rött, grönt, blått (0–255). T.ex. <code style="font-size:.85rem">(255, 100, 200)</code> blir rosa.</p>
+    </div>
+  </details>
+
+  <details class="panel">
+    <summary>📖 Lär dig mer</summary>
+    <div class="panel-body">
+      <div class="learn-item">
+        <h3>Rutnätet</h3>
+        <p>Charmen är 8 prickar gånger 8 prickar. Tänd en prick så här – första talet är raden, andra är kolumnen (0–7):</p>
+        <code>m[0][0] = R</code>
+      </div>
+      <div class="learn-item">
+        <h3>Måla hela skärmen</h3>
+        <p>Gör allt blått, eller släck allt:</p>
+        <code>background(B)</code> &nbsp; <code>clear()</code>
+      </div>
+      <div class="learn-item">
+        <h3>Ett hjärta</h3>
+        <p>Rita ett hjärta i vilken färg du vill:</p>
+        <code>heart(R)</code>
+      </div>
+      <div class="learn-item">
+        <h3>Rullande text</h3>
+        <p>Skicka text förbi på skärmen. Tips: sätt några mellanslag på slutet, annars sitter början och slutet ihop när den loopar.</p>
+        <code>scrolling_text("hej   ")</code>
+      </div>
+      <div class="learn-item">
+        <h3>En bokstav</h3>
+        <p>Visa en enda bokstav i en färg:</p>
+        <code>character("A", G)</code>
+      </div>
+      <div class="learn-item">
+        <h3>Blinka</h3>
+        <p>Få bilden att blinka en gång i sekunden (eller mer):</p>
+        <code>blink_rate = 1</code>
+      </div>
+      <div class="learn-item">
+        <h3>Rörelse</h3>
+        <p>Lägger du flera bilder efter varandra blir det en animation – så får du saker att röra sig och förändras. Det sköter koden åt dig med <code>Animation()</code>.</p>
+      </div>
+      <p class="examples-label" style="margin:14px 0 0">Bästa sättet att lära sig: ändra något i koden du får och se vad som händer. Byt en bokstav, ett tal – testa!</p>
+    </div>
+  </details>
+
+  <footer>
+    <button id="change-key" class="link">Byt API-nyckel</button>
+  </footer>
+</div>
+
+<div id="overlay" class="overlay">
+  <div class="card">
+    <h2>API-nyckel</h2>
+    <p>Klistra in din Anthropic API-nyckel. Den sparas bara här på plattan och skickas aldrig någon annanstans.</p>
+    <input id="key-input" type="password" inputmode="text" autocomplete="off"
+           placeholder="sk-ant-..." spellcheck="false">
+    <div id="key-err" class="err"></div>
+    <button id="save-key" class="btn btn-primary">Spara</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+<script>
+const MODEL = "claude-sonnet-4-6";
+const KEY_STORAGE = "anthropic_api_key";
+
+const $ = (id) => document.getElementById(id);
+const overlay = $("overlay");
+const statusBox = $("status");
+const statusText = $("status-text");
+const resultBox = $("result");
+const codeEl = $("code");
+
+let referencePromise = null;
+
+// --- API-nyckel ---------------------------------------------------------
+function getKey() { return localStorage.getItem(KEY_STORAGE); }
+
+function openKeyDialog() {
+  $("key-input").value = getKey() || "";
+  $("key-err").textContent = "";
+  overlay.classList.add("show");
+  $("key-input").focus();
+}
+function closeKeyDialog() { overlay.classList.remove("show"); }
+
+$("save-key").addEventListener("click", () => {
+  const v = $("key-input").value.trim();
+  if (!v.startsWith("sk-")) {
+    $("key-err").textContent = "Det ser inte ut som en giltig nyckel (ska börja med sk-).";
+    return;
+  }
+  localStorage.setItem(KEY_STORAGE, v);
+  closeKeyDialog();
+});
+$("key-input").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") $("save-key").click();
+});
+$("change-key").addEventListener("click", openKeyDialog);
+
+// --- Systemprompt -------------------------------------------------------
+function loadReference() {
+  if (!referencePromise) {
+    referencePromise = fetch("./imagilib_reference.md").then((r) => {
+      if (!r.ok) throw new Error("Kunde inte ladda imagilib-referensen.");
+      return r.text();
+    });
+  }
+  return referencePromise;
+}
+
+function buildSystemPrompt(reference) {
+  return `Du skriver Python-kod för en ImagiCharm – en bärbar 8x8 LED-display.
+
+Viktigt om hur det fungerar: koden körs INTE på själva charmen. Den körs i imagi-appen på telefonen/plattan, som renderar resultatet och skickar färdiga bildrutor till charmen via Bluetooth. Charmen är alltså bara en display som visar en färdig animation.
+
+Använd biblioteket imagilib (alltid förimporterat) enligt referensen nedan.
+
+REGLER:
+- Svara ALLTID med enbart komplett, körbar Python-kod. Ingen förklaring, inga rubriker, ingen text runt om, inga markdown-staket.
+- Den som använder koden är ett barn (Ida). Håll koden enkel, tydlig och rolig. Lägg gärna in korta svenska kommentarer som förklarar vad som händer.
+- Om du gör scrollande text med scrolling_text: avsluta texten med flera mellanslag så att slutet och början inte sitter ihop när den loopar.
+- Hitta inte på funktioner som inte finns i referensen.
+
+=== imagilib-referens ===
+${reference}`;
+}
+
+// --- Generering ---------------------------------------------------------
+function setStatus(kind, text) {
+  statusBox.className = "status show" + (kind === "error" ? " error" : "");
+  statusText.textContent = text;
+  statusBox.querySelector(".spinner").style.display = kind === "error" ? "none" : "";
+}
+function hideStatus() { statusBox.className = "status"; }
+
+function stripFences(text) {
+  let t = text.trim();
+  const m = t.match(/^```(?:python|py)?\s*\n([\s\S]*?)\n```$/i);
+  if (m) return m[1].trim();
+  return t;
+}
+
+async function generate() {
+  const desc = $("desc").value.trim();
+  if (!desc) { $("desc").focus(); return; }
+
+  const key = getKey();
+  if (!key) { openKeyDialog(); return; }
+
+  $("generate").disabled = true;
+  resultBox.classList.remove("show");
+  setStatus("loading", "Trollar fram din kod...");
+
+  try {
+    const reference = await loadReference();
+    const system = buildSystemPrompt(reference);
+
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-api-key": key,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true"
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        max_tokens: 1500,
+        // Referensen är identisk varje gång -> cacha systemblocket.
+        // Full kostnad första gången, sedan ~10% vid cache-träff + snabbare svar.
+        system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
+        messages: [{ role: "user", content: desc }]
+      })
+    });
+
+    if (!res.ok) {
+      let detail = "";
+      try { detail = (await res.json())?.error?.message || ""; } catch (e) {}
+      if (res.status === 401) {
+        hideStatus();
+        $("key-err").textContent = "Nyckeln verkar ogiltig. Försök igen.";
+        openKeyDialog();
+        return;
+      }
+      throw new Error(detail || ("Något gick fel (" + res.status + ")."));
+    }
+
+    const data = await res.json();
+    const text = (data.content || [])
+      .filter((b) => b.type === "text")
+      .map((b) => b.text)
+      .join("");
+    const code = stripFences(text);
+
+    codeEl.textContent = code;
+    codeEl.removeAttribute("data-highlighted");
+    codeEl.className = "language-python hljs";
+    hljs.highlightElement(codeEl);
+
+    hideStatus();
+    resultBox.classList.add("show");
+    $("copy").className = "btn btn-copy";
+    $("copy").textContent = "Kopiera kod 📋";
+    resultBox.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  } catch (err) {
+    const msg = (err && err.message) ? err.message : String(err);
+    const network = /Failed to fetch|NetworkError|load failed/i.test(msg);
+    setStatus("error", network
+      ? "Kunde inte nå internet. Kolla wifi och försök igen."
+      : ("Oj: " + msg));
+  } finally {
+    $("generate").disabled = false;
+  }
+}
+
+$("generate").addEventListener("click", generate);
+
+// --- Exempelprompter ----------------------------------------------------
+$("chips").addEventListener("click", (e) => {
+  const btn = e.target.closest(".chip");
+  if (!btn) return;
+  const desc = $("desc");
+  desc.value = btn.textContent;
+  desc.focus();
+  desc.scrollIntoView({ behavior: "smooth", block: "center" });
+});
+
+// --- Kopiera ------------------------------------------------------------
+$("copy").addEventListener("click", async () => {
+  const code = codeEl.textContent;
+  try {
+    await navigator.clipboard.writeText(code);
+  } catch (e) {
+    const ta = document.createElement("textarea");
+    ta.value = code; document.body.appendChild(ta);
+    ta.select(); document.execCommand("copy"); ta.remove();
+  }
+  $("copy").className = "btn btn-copy done";
+  $("copy").textContent = "Kopierat! ✅";
+  setTimeout(() => {
+    $("copy").className = "btn btn-copy";
+    $("copy").textContent = "Kopiera kod 📋";
+  }, 1800);
+});
+
+// --- Start --------------------------------------------------------------
+if (!getKey()) openKeyDialog();
+
+// PWA service worker (offline-skal)
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./sw.js").catch(() => {});
+}
+</script>
+</body>
+</html>
