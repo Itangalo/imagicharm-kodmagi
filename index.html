@@ -442,7 +442,10 @@ async function generate() {
       },
       body: JSON.stringify({
         model: MODEL,
-        max_tokens: 1500,
+        // Generöst tak: rymmer även stora pixelkonstverk. Sonnet är ingen
+        // resonemangsmodell, så ett högt tak kostar inget extra när svaret
+        // är kort – man betalar bara för tokens som faktiskt genereras.
+        max_tokens: 8000,
         messages: [
           // Referensen är identisk varje gång -> cacha systemmeddelandet.
           // (OpenRouter skickar vidare cache_control till Anthropic-modeller.)
@@ -466,14 +469,17 @@ async function generate() {
     }
 
     const data = await res.json();
-    const text = data?.choices?.[0]?.message?.content || "";
+    const choice = data?.choices?.[0];
+    const text = choice?.message?.content || "";
     const code = stripFences(text);
+    const finish = choice?.finish_reason;
 
+    // "length" = svaret kapades mitt i. Halv kod är trasig kod – visa den inte.
+    if (finish === "length") {
+      throw new Error("Koden blev längre än utrymmet och kapades på mitten. Försök igen, eller be om något lite enklare.");
+    }
     if (!code) {
-      const reason = data?.choices?.[0]?.finish_reason || "okänt";
-      throw new Error(reason === "length"
-        ? "Svaret tog slut på utrymme innan koden blev klar. Försök igen eller förenkla beskrivningen."
-        : "Modellen gav ingen kod (orsak: " + reason + "). Försök igen.");
+      throw new Error("Modellen gav ingen kod (orsak: " + (finish || "okänt") + "). Försök igen.");
     }
 
     codeEl.textContent = code;
