@@ -171,6 +171,8 @@ for i in range(8):
     a.add_frame(m, 150)
 ```
 
+**OBS:** En `Animation` kan ha som mest **100 bildrutor** (`add_frame`-anrop). Håll loopar inom den gränsen.
+
 ---
 
 ## Tillgängliga standardbibliotek
@@ -294,6 +296,7 @@ scrolling_text(str(score), G)     # rulla siffra
 
 - `scrolling_text` kan inte kombineras med `Animation`
 - Max 40 tecken i `scrolling_text`
+- Max 100 bildrutor i en `Animation`
 - Pixelindex är alltid 0–7 (utanför det kraschar koden)
 - Använd `//` (heltalsdivision) när index beräknas med division: `m[6//2][0]`
 - `math` fungerar inte med komplexa tal
