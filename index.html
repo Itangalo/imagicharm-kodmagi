@@ -338,7 +338,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
 <script>
-const MODEL = "anthropic/claude-sonnet-4.6";
+const MODEL = "openai/gpt-5-codex";
 const KEY_STORAGE = "anthropic_api_key";  // historiskt namn; lagrar OpenRouter-nyckeln
 
 const $ = (id) => document.getElementById(id);
@@ -444,10 +444,9 @@ async function generate() {
         model: MODEL,
         max_tokens: 1500,
         messages: [
-          // Referensen är identisk varje gång -> cacha systemmeddelandet.
-          // Full kostnad första gången, sedan ~10% vid cache-träff + snabbare svar.
-          // (OpenRouter skickar vidare cache_control till Anthropic-modeller.)
-          { role: "system", content: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }] },
+          // Systemmeddelandet (referensen) är identiskt varje gång. OpenAI-modeller
+          // cachar identiska prefix automatiskt, så ingen cache_control behövs här.
+          { role: "system", content: system },
           { role: "user", content: desc }
         ]
       })
