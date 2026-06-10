@@ -1,5 +1,5 @@
 // Enkel service worker – gör appen installerbar och cachar skalet offline.
-const CACHE = "imagicharm-v2";
+const CACHE = "imagicharm-v3";
 const ASSETS = [
   "./",
   "./index.html",
@@ -26,7 +26,7 @@ self.addEventListener("activate", (e) => {
 self.addEventListener("fetch", (e) => {
   const url = new URL(e.request.url);
   // Anropa aldrig API:t via cache.
-  if (url.hostname.endsWith("anthropic.com")) return;
+  if (url.hostname.endsWith("openrouter.ai")) return;
 
   // Sidan (HTML) hämtas alltid från nätet först, så att fixar slår igenom.
   // Cachen används bara som reserv när man är offline.

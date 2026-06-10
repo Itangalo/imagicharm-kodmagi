@@ -5,14 +5,14 @@ En liten webbapp där du beskriver vad du vill visa på din [ImagiCharm](https:/
 ## Så funkar det
 
 1. Skriv en beskrivning på svenska, t.ex. *"ett regnbågshjärta som blinkar"*.
-2. Appen skickar beskrivningen till Claude tillsammans med en referens för `imagilib`.
+2. Appen skickar beskrivningen till Claude (Sonnet 4.6 via OpenRouter) tillsammans med en referens för `imagilib`.
 3. Du får tillbaka körbar Python-kod – kopiera och klistra in i imagi-appen.
 
 Koden körs inte på charmen själv. Den körs i imagi-appen på telefonen/plattan, som renderar bilden och skickar färdiga bildrutor till charmen via Bluetooth.
 
 ## API-nyckel
 
-Appen anropar Anthropic API direkt från webbläsaren. Första gången frågar den efter en API-nyckel som sparas i `localStorage` på enheten – den finns aldrig i källkoden och skickas ingen annanstans.
+Appen anropar OpenRouter direkt från webbläsaren. Första gången frågar den efter en OpenRouter-nyckel (`sk-or-...`) som sparas i `localStorage` på enheten – den finns aldrig i källkoden och skickas ingen annanstans.
 
 ## Filer
 
